@@ -1,10 +1,7 @@
 @Library("Shared") _
 pipeline{
-    
-    agent { label "vinod"}
-    
+    agent {label "AgentJ"}
     stages{
-        
         stage("Hello"){
             steps{
                 script{
@@ -14,31 +11,42 @@ pipeline{
         }
         stage("Code"){
             steps{
-               script{
-                clone("https://github.com/LondheShubham153/django-notes-app.git","main")
-               }
-                
+                script{
+                    clone("https://github.com/Martand03/django-notes-app.git","main")
+                }
             }
         }
         stage("Build"){
-            steps{
+           steps {
                 script{
-                docker_build("notes-app","latest","trainwithshubham")
+                    docker_build("django-notes-app","latest")
                 }
             }
         }
-        stage("Push to DockerHub"){
+        stage("Test"){
             steps{
-                script{
-                    docker_push("notes-app","latest","trainwithshubham")
-                }
+                echo "This is testting the code"
+            }
+        }
+        stage("Push to dockerhub"){
+            steps{
+                echo "This is pushing the code to dockerhub"
+                withCredentials([usernamePassword('credentialsId':"jenkins-docker",
+                    passwordVariable:"dockerHubPass",
+                    usernameVariable:"dockerHubUser")]){
+                    bat "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+                    bat "docker image tag django-notes-app:latest manik31/django-notes-app:latest"
+                    bat "docker push manik31/django-notes-app:latest"
+                    echo "Success in pushing docker image to dockerHub"
+                    }
             }
         }
         stage("Deploy"){
             steps{
                 echo "This is deploying the code"
-                sh "docker compose down && docker compose up -d"
+                bat "docker compose up -d"
             }
         }
+        
     }
 }
