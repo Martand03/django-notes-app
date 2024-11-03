@@ -42,28 +42,23 @@ pipeline{
             }
         }
         stage("Deploy to EC2") {
-    steps {
-        echo "Deploying the code to EC2"
-        withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'EC2_KEY')]) {
-            // Use a temporary file to hold the SSH key securely
-            writeFile(file: 'key.pem', text: "${EC2_KEY}")
-            sh """
-                chmod 600 key.pem 
-                ssh -i key.pem ec2-user@13.126.214.40 << EOF
-                    set -e  # Exit immediately if a command exits with a non-zero status
-                    echo "Pulling the latest Docker image..."
-                    docker pull manik31/django-notes-app:latest  
-                    echo "Bringing down any running containers..."
-                    docker-compose -f docker-compose.prod.yml down || true  
-                    echo "Starting the application..."
-                    docker-compose -f docker-compose.prod.yml up -d
-                EOF
-            """
-            // Clean up the key file after use
-            sh 'rm key.pem'
+            steps {
+                script {
+                    // Define the EC2 instance IP and SSH credentials
+                    def ec2Ip = "13.126.214.40"
+                    def sshKeyPath = "C:\\Users\\marta\\Downloads\\keypair1.pem" // Update this to your private key path
+                    def remoteUser = "ec2-user" // Default user for Amazon Linux
+
+                    // SSH command to deploy the application
+                    sh """
+                        ssh -i ${sshKeyPath} ${remoteUser}@${ec2Ip} '
+                        sudo docker pull manik31/django-notes-app:latest
+                        sudo docker run -d -p 8000:8000 manik31/django-notes-app:latest
+                        '
+                    """
+                }
+            }
         }
-    }
-}
 
 
         
