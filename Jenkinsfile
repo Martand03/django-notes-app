@@ -49,7 +49,7 @@ pipeline{
             writeFile(file: 'key.pem', text: "${EC2_KEY}")
             sh """
                 chmod 600 key.pem 
-                ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@13.126.214.40 << EOF
+                ssh -i key.pem ec2-user@13.126.214.40 << EOF
                     set -e  # Exit immediately if a command exits with a non-zero status
                     echo "Pulling the latest Docker image..."
                     docker pull manik31/django-notes-app:latest  
