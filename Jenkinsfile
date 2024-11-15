@@ -41,7 +41,7 @@ pipeline{
                     }
             }
         }
-        stage("Deploy to EC2"){
+        stage("Deploy"){
             steps{
                 echo "This is deploying the code"
                 bat "docker compose up -d"
